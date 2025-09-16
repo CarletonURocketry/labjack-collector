@@ -6,6 +6,7 @@ https://labjack.com/blogs/faq/what-is-a-labjack
 
 Documentation of the labjack library can be found here: https://support.labjack.com/docs/ljm-library-overview
 
+Labjack library examples: https://github.com/labjack/labjack-ljm-python
 
 ## Installation
 

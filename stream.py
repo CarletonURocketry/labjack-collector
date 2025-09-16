@@ -1,3 +1,5 @@
+# the following script was based on https://github.com/labjack/labjack-ljm-python
+
 """
 Demonstrates how to stream using the eStream functions.
 
