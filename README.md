@@ -2,6 +2,8 @@
 
 The labjack collector is a system that collects, logs and relays data over network from the labjack data collection system.
 
+https://labjack.com/blogs/faq/what-is-a-labjack
+
 Documentation of the labjack library can be found here: https://support.labjack.com/docs/ljm-library-overview
 
 
