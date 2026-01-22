@@ -47,7 +47,7 @@ import sys
 from labjack import ljm
 
 
-MAX_REQUESTS = 100  # The number of eStreamRead calls that will be performed.
+MAX_REQUESTS = 1000  # The number of eStreamRead calls that will be performed.
 
 handle = ljm.openS("ANY", "ANY", "ANY")  # Any device, Any connection, Any identifier
 
@@ -62,8 +62,8 @@ deviceType = info[0]
 aScanListNames = ["AIN0"]  # Scan list names to stream
 numAddresses = len(aScanListNames)
 aScanList = ljm.namesToAddresses(numAddresses, aScanListNames)[0]
-scanRate = 10000
-scansPerRead = int(scanRate / 2)
+scanRate = 100 # High rate
+scansPerRead = 10 # Low scansPerRead
 
 try:
     # Ensure triggered stream is disabled.
@@ -97,38 +97,39 @@ try:
     start = datetime.now()
     totSkip = 0  
 
-    i = 1
-    while i <= MAX_REQUESTS:
-        ret = ljm.eStreamRead(handle)
+    i = 1  
+    with open(f"rate_{scanRate}_scans_{scansPerRead}.csv", "a") as f: 
+        while i <= MAX_REQUESTS:
+            ret = ljm.eStreamRead(handle)
 
-        aData = ret[0]
-        scans = len(aData) / numAddresses
+            aData = ret[0]
+            scans = len(aData) / numAddresses
 
-        # with open(f"stream-{datetime.now()}.csv", "a") as f: f.write(f"{aData}\n")
+            f.write(f"{aData}\n")
 
-        # Count the skipped samples which are indicated by -9999 values. Missed
-        # samples occur after a device's stream buffer overflows and are
-        # reported after auto-recover mode ends.
-        curSkip = aData.count(-9999.0)
-        totSkip += curSkip
+            # Count the skipped samples which are indicated by -9999 values. Missed
+            # samples occur after a device's stream buffer overflows and are
+            # reported after auto-recover mode ends.
+            curSkip = aData.count(-9999.0)
+            totSkip += curSkip
 
-        print("\neStreamRead %i" % i)
-        ainStr = ""
-        for j in range(0, numAddresses):
-            ainStr += "%s = %0.5f, " % (aScanListNames[j], aData[j])
-        print("  1st scan out of %i: %s" % (scans, ainStr))
-        print("  Scans Skipped = %0.0f, Scan Backlogs: Device = %i, LJM = "
-              "%i" % (curSkip/numAddresses, ret[1], ret[2]))
-        i += 1
+            print("\neStreamRead %i" % i)
+            ainStr = ""
+            for j in range(0, numAddresses):
+                ainStr += "%s = %0.5f, " % (aScanListNames[j], aData[j])
+            print("  1st scan out of %i: %s" % (scans, ainStr))
+            print("  Scans Skipped = %0.0f, Scan Backlogs: Device = %i, LJM = "
+                "%i" % (curSkip/numAddresses, ret[1], ret[2]))
+            i += 1
 
     end = datetime.now()
 
-    print("\nTotal scans = %i" % (totScans))
+    print("\nTotal scans = %i" % (i-1))
     tt = (end - start).seconds + float((end - start).microseconds) / 1000000
     print("Time taken = %f seconds" % (tt))
     print("LJM Scan Rate = %f scans/second" % (scanRate))
-    print("Timed Scan Rate = %f scans/second" % (totScans / tt))
-    print("Timed Sample Rate = %f samples/second" % (totScans * numAddresses / tt))
+    print("Timed Scan Rate = %f scans/second" % (i-1 / tt))
+    print("Timed Sample Rate = %f samples/second" % (i-1 * numAddresses / tt))
     print("Skipped scans = %0.0f" % (totSkip / numAddresses))
 except ljm.LJMError:
     ljme = sys.exc_info()[1]
@@ -139,13 +140,15 @@ except Exception:
 
 try:
     print("\nStop Stream")
-    ljm.eStreamStop(handle)
 except ljm.LJMError:
     ljme = sys.exc_info()[1]
     print(ljme)
 except Exception:
     e = sys.exc_info()[1]
     print(e)
+finally:
+    ljm.eStreamStop(handle)
+    # Close handle
+    ljm.close(handle)
 
-# Close handle
-ljm.close(handle)
+
