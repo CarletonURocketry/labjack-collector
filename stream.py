@@ -4,6 +4,8 @@
 from datetime import datetime
 import sys
 import csv
+from logger import logFile
+from config import channelToSensor
 
 from labjack import ljm
 
@@ -50,6 +52,7 @@ def streaming():
         totSkip = 0  # Counter for skipped samples
 
         i = 1
+        logFile = logFile("stream_log.csv", aScanListNames, channelToSensor)
         with open(f"rate_{scanRate}_scans_{scansPerRead}.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(aScanListNames)
