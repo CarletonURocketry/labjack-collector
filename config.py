@@ -1,8 +1,7 @@
+"""Config file containing the configuration of the LabJack
+"""
 import dataConversions
 from packet_spec import TelemetryPacketSubType as SensorTypeID
-
-SENSOR_TEMP = 0
-SENSOR_PRESSURE = 1
 
 class Sensor:
     def __init__(self, name: str, sensor_type_id: SensorTypeID, sensor_id: int, convertClass: dataConversions.genericAmplifier):
@@ -27,3 +26,14 @@ channelToSensor: dict[str, Sensor] = {
     "AIN12": Sensor("T3", SensorTypeID.TEMPERATURE, 3, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))), # Placeholder (mC, V)
     "AIN13": Sensor("T4", SensorTypeID.TEMPERATURE, 4, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))) # Placeholder (mC, V)
     }
+
+scanRate = 8000 # Scan rate in Hz
+
+networkScanFraction = 100 # Fraction of scans to send over network (e.g., 10 means 1 out of every 10 scans)
+
+logFilePath = "\\logs\\labjack-collector"
+
+dataLog = "data.csv"
+
+mc_addr = "0.0.0.0"
+port = 50002

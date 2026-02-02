@@ -1,3 +1,5 @@
+
+
 class genericAmplifier:
     """Class to use for any sensor which give a radiometic output
     """
@@ -11,7 +13,7 @@ class genericAmplifier:
         self.range = range
         self.range_volt = range_volt
 
-    def volt_to_output(self, voltage: float) -> float:
+    def volt_to_output(self, voltage: float) -> int:
         """Function to give the output of the sensor given an input
 
         Args:
@@ -23,4 +25,4 @@ class genericAmplifier:
         volt_min, volt_max = self.range_volt
         output_min, output_max = self.range
         output = ((voltage - volt_min) / (volt_max - volt_min)) * (output_max - output_min) + output_min
-        return output
+        return int(output)

@@ -5,7 +5,7 @@ import config
 class sendData:
     def __init__(self, ip: str, port: int, channels: list[str], config: dict[str, config.Sensor]):
         self.socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.ip = ip
+        self.mc_addr = ip
         self.port = port
         self.config = config
         self.channels = channels
@@ -22,4 +22,4 @@ class sendData:
             else:
                 byte_data += int(dataConverted[i]).to_bytes(2, 'little', signed=True)
             byte_data += sensor.sensor_id.to_bytes(1, 'little', signed=False)
-            self.socket_udp.sendto(byte_data, (self.ip, self.port))
+            self.socket_udp.sendto(byte_data, (self.mc_addr, self.port))
