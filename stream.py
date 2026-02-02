@@ -1,46 +1,6 @@
+# type: ignore
 # the following script was based on https://github.com/labjack/labjack-ljm-python
 
-"""
-Demonstrates how to stream using the eStream functions.
-
-Relevant Documentation:
-
-LJM Library:
-    LJM Library Installer:
-        https://labjack.com/support/software/installers/ljm
-    LJM Users Guide:
-        https://labjack.com/support/software/api/ljm
-    Opening and Closing:
-        https://labjack.com/support/software/api/ljm/function-reference/opening-and-closing
-    Constants:
-        https://labjack.com/support/software/api/ljm/constants
-    NamesToAddresses:
-        https://labjack.com/support/software/api/ljm/function-reference/utility/ljmnamestoaddresses
-    eWriteName:
-        https://labjack.com/support/software/api/ljm/function-reference/ljmewritename
-    eWriteNames:
-        https://labjack.com/support/software/api/ljm/function-reference/ljmewritenames
-    Stream Functions (such as eStreamStart, eStreamRead and eStreamStop):
-        https://labjack.com/support/software/api/ljm/function-reference/stream-functions
-
-T-Series and I/O:
-    Modbus Map:
-        https://labjack.com/support/software/api/modbus/modbus-map
-    Stream Mode:
-        https://labjack.com/support/datasheets/t-series/communication/stream-mode
-    Analog Inputs:
-        https://labjack.com/support/datasheets/t-series/ain
-
-Note:
-    Our Python interfaces throw exceptions when there are any issues with
-    device communications that need addressed. Many of our examples will
-    terminate immediately when an exception is thrown. The onus is on the API
-    user to address the cause of any exceptions thrown, and add exception
-    handling when appropriate. We create our own exception classes that are
-    derived from the built-in Python Exception class and can be caught as such.
-    For more information, see the implementation in our source code and the
-    Python standard documentation.
-"""
 from datetime import datetime
 import sys
 import csv
@@ -51,7 +11,7 @@ def streaming():
     
     MAX_REQUESTS = 1000  # The number of eStreamRead calls that will be performed.
 
-    handle = ljm.openS("ANY", "ANY", "ANY")  # Any device, Any connection, Any identifier
+    handle = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
 
     info = ljm.getHandleInfo(handle)
     print(
@@ -62,11 +22,11 @@ def streaming():
     deviceType = info[0]
 
     # Stream Configuration
-    aScanListNames = ["AIN0", "AIN1", "AIN2", "AIN3"]  # Scan list names to stream, also the headers for CSV
+    aScanListNames = ["AIN0", "AIN1", "AIN2", "AIN3", "AIN4", "AIN5", "AIN6", "AIN7", "AIN8", "AIN9", "AIN10", "AIN11", "AIN12", "AIN13"]  # Scan list names to stream, also the headers for CSV
     numAddresses = len(aScanListNames)  # Number of channels we want to read
     aScanList = ljm.namesToAddresses(numAddresses, aScanListNames)[0]
-    scanRate = 60  # Scan rate set to monitor's 60Hz refresh rate
-    scansPerRead = 1  # Reading each channel once per eStreamRead
+    scanRate = 8000  # Scan rate in Hz (Per channel)
+    scansPerRead = 1  # Read Each Channel once per eStreamRead call
 
     try:
         # Ensure triggered stream is disabled.
@@ -75,22 +35,11 @@ def streaming():
         # Enabling internally-clocked stream.
         ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)
 
-        # AIN0 and AIN1 ranges are +/-10 V (T7) or +/-11 V (T8).
-        # Stream resolution index is 0 (default).
-        aNames = ["AIN0_RANGE", "AIN1_RANGE", "STREAM_RESOLUTION_INDEX"]
-        aValues = [1.0, 1.0, 0]
-
-        # Negative channel and settling configurations do not apply to the T8.
-        if deviceType == ljm.constants.dtT7:
-            # Negative Channel = 199 (Single-ended)
-            # Settling = 0 (auto)
-            aNames.extend(
-                ["AIN0_NEGATIVE_CH", "STREAM_SETTLING_US", "AIN1_NEGATIVE_CH"])
-            aValues.extend([199, 0, 199])
-
-        # Write the analog input configuration
-        numFrames = len(aNames)
-        ljm.eWriteNames(handle, numFrames, aNames, aValues)
+        for name in aScanListNames:
+            ljm.eWriteName(handle, name + "_RANGE", 1.0) # +/-10 V
+            ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # Single-ended
+        ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0)
+        ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # Auto settling time
 
         # Configure and start stream
         scanRate = ljm.eStreamStart(handle, scansPerRead, numAddresses, aScanList, scanRate)
