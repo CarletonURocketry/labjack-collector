@@ -28,6 +28,15 @@ class dataLogger:
             f.write(header)
             f.flush() # Clear Python's buffer
             os.fsync(f.fileno()) # Ensure data is written to disk
+        with open(self.filepath + ".back", "a", newline="") as f:
+            header = "Timestamp,"
+            for channel in self.channels:
+                sensor = self.config[channel]
+                header += f"{sensor.name}_Raw,{sensor.name}_Converted,"
+            header = header + "\n"
+            f.write(header)
+            f.flush() # Clear Python's buffer
+            os.fsync(f.fileno()) # Ensure data is written to disk
 
     def writeRow(self, dataRaw: list[float], dataConverted: list[int], timestamp: float) -> None:
         """Function to write a row of data to the CSV. NOTE: Data must be in the same order as channels passed to the constructor.
@@ -38,6 +47,14 @@ class dataLogger:
             timestamp (float): Timestamp of the data
         """
         with open(self.filepath, "a", newline="") as f:
+            row = f"{timestamp},"
+            for i in range(len(self.channels)):
+                row += f"{dataRaw[i]},{dataConverted[i]},"
+            row = row + "\n"
+            f.write(row)
+            f.flush() # Clear Python's buffer
+            os.fsync(f.fileno()) # Ensure data is written to disk
+        with open(self.filepath + ".back", "a", newline="") as f:
             row = f"{timestamp},"
             for i in range(len(self.channels)):
                 row += f"{dataRaw[i]},{dataConverted[i]},"

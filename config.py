@@ -27,9 +27,9 @@ channelToSensor: dict[str, Sensor] = {
     "AIN13": Sensor("T4", SensorTypeID.TEMPERATURE, 4, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))) # Placeholder (mC, V)
     }
 
-scanRate = 10 # Scan rate in Hz
+scanRate = 8000 # Scan rate in Hz
 
-networkScanFraction = 1 # Fraction of scans to send over network (e.g., 10 means 1 out of every 10 scans)
+networkScanFraction = 100 # Fraction of scans to send over network (e.g., 10 means 1 out of every 10 scans)
 
 logFilePath = ""#"\\logs\\labjack-collector"
 

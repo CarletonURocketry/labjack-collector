@@ -26,21 +26,20 @@ class labjackClass:
         self.scanRate = scanRate
         self.args = args
 
-        print(self.args.debug)
-
         try:
             if not self.args.debug:
                 print("Connecting to labjack...")
                 self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
-                ljm.eWriteName(handle, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
-                ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
-
+                ljm.eWriteName(self.labjack, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
+                ljm.eWriteName(self.labjack, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
+                print(f"Connected to labjack with handle: {self.labjack}")
                 for name in scanList:
-                    ljm.eWriteName(handle, name + "_RANGE", 1.0) # type: ignore +/-10 V
-                    ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
-                ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
-                ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
-                self.stream = ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], scanRate) # type: ignore Configure and start stream
+                    ljm.eWriteName(self.labjack, name + "_RANGE", 10) # type: ignore +/-10 V
+                    ljm.eWriteName(self.labjack, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
+                ljm.eWriteName(self.labjack, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
+                ljm.eWriteName(self.labjack, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
+                ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], scanRate) # type: ignore Configure and start stream
+                print("Stream started.")
             else:
                 print("Debug mode enabled, simulating labjack data...")
                 self.labjack = None
@@ -62,9 +61,10 @@ class labjackClass:
         """
         try:
             if not self.args.debug:
-                print(self.args.debug)
-                print("Reading data from labjack...")
-                return ljm.eStreamRead(self.labjack) # type: ignore
+                #print("Reading data from labjack...")
+                data = ljm.eStreamRead(self.labjack)  # type: ignore Read data from stream
+                print(f"Labjack Buffer {data[1]}, LJM Buffer {data[2]}")  # type: ignore
+                return data # type: ignore
             else:
                 print("Simulating data...")
                 while ((time.time() - self.lastSimulatedTime) < 1.0 / self.scanRate):
@@ -79,9 +79,9 @@ class labjackClass:
                 scansPendingLJM = 0
                 scansPendingLJ = 0
                 return (simulatedData, scansPendingLJM, scansPendingLJ)
-        except ljm.LJMError:
+        except ljm.LJMError as ljme:
             e = sys.exc_info()
-            print(e)
+            print(str(e) + str(ljme))
             return -1
         except Exception:
             e = sys.exc_info()
