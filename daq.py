@@ -22,6 +22,8 @@ class labjackClass:
             args (list[Any] | None, optional): Command line arguments. Refer to main program for options. Defaults to None.
         """
 
+        ljm.closeAll()  # type: ignore Close any previously opened labjack handles
+
         self.scanList = scanList
         self.scanRate = scanRate
         self.args = args
