@@ -5,33 +5,47 @@ from labjack import ljm # type: ignore
 import sys
 import logging
 import config
+import argparse
+import random
+import time
 
 errorLog = logging.getLogger(__name__)
 logging.basicConfig(filename=config.logFilePath + "\\" + "labjackError.log", encoding='utf-8', level=logging.INFO)
 
-class labjack:
-    def __init__(self, scanList: list[str], scanRate: int) -> None:
+class labjackClass:
+    def __init__(self, scanList: list[str], scanRate: int, args: argparse.Namespace) -> None:
         """_summary_
 
         Args:
             scanList (list[str]): List of channel names to stream
             scanRate (int): Rate to stream at in Hz
+            args (list[Any] | None, optional): Command line arguments. Refer to main program for options. Defaults to None.
         """
 
         self.scanList = scanList
         self.scanRate = scanRate
+        self.args = args
+
+        print(self.args.debug)
 
         try:
-            self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
-            ljm.eWriteName(handle, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
-            ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
+            if not self.args.debug:
+                print("Connecting to labjack...")
+                self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
+                ljm.eWriteName(handle, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
+                ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
 
-            for name in scanList:
-                ljm.eWriteName(handle, name + "_RANGE", 1.0) # type: ignore +/-10 V
-                ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
-            ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
-            ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
-            self.stream = ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], scanRate) # type: ignore Configure and start stream
+                for name in scanList:
+                    ljm.eWriteName(handle, name + "_RANGE", 1.0) # type: ignore +/-10 V
+                    ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
+                ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
+                ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
+                self.stream = ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], scanRate) # type: ignore Configure and start stream
+            else:
+                print("Debug mode enabled, simulating labjack data...")
+                self.labjack = None
+                self.stream = None
+                self.lastSimulatedTime = time.time()
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
@@ -47,7 +61,24 @@ class labjack:
             tuple[list[float], int, int] | int: A tuple containing the list of scanned data, number of scans unread on the labjack buffer, and number of scans unread in the ljm buffer. Returns -1 if an error occured.
         """
         try:
-            return ljm.eStreamRead(self.labjack) # type: ignore
+            if not self.args.debug:
+                print(self.args.debug)
+                print("Reading data from labjack...")
+                return ljm.eStreamRead(self.labjack) # type: ignore
+            else:
+                print("Simulating data...")
+                while ((time.time() - self.lastSimulatedTime) < 1.0 / self.scanRate):
+                    pass
+                self.lastSimulatedTime = time.time()
+                simulatedData: list[float] = []
+                for _ in self.scanList:
+                    if config.channelToSensor[_].sensor_type_id in (config.SensorTypeID.TEMPERATURE, config.SensorTypeID.MASS, config.SensorTypeID.THRUST):
+                        simulatedData.append(random.uniform(0, 10))
+                    else:
+                        simulatedData.append(random.uniform(0, 5))
+                scansPendingLJM = 0
+                scansPendingLJ = 0
+                return (simulatedData, scansPendingLJM, scansPendingLJ)
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
@@ -62,9 +93,12 @@ class labjack:
         """Function to stop the stream and close the labjack handle
         """
         try:
-            ljm.eStreamStop(self.labjack)  # type: ignore
-            ljm.close(self.labjack)  # type: ignore
-            return 0
+            if not self.args.debug:
+                ljm.eStreamStop(self.labjack)  # type: ignore
+                ljm.close(self.labjack)  # type: ignore
+                return 0
+            else:
+                return 0
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
@@ -81,16 +115,18 @@ class labjack:
             int: 0 if successful, -1 if error occured
         """
         try:
-            self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
-            ljm.eWriteName(handle, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
-            ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
+            if not self.args.debug:
+                self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
+                ljm.eWriteName(handle, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
+                ljm.eWriteName(handle, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
 
-            for name in self.scanList:
-                ljm.eWriteName(handle, name + "_RANGE", 1.0) # type: ignore +/-10 V
-                ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
-            ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
-            ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
-            self.stream = ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], self.scanRate) # type: ignore Configure and start stream
+                for name in self.scanList:
+                    ljm.eWriteName(handle, name + "_RANGE", 1.0) # type: ignore +/-10 V
+                    ljm.eWriteName(handle, name + "_NEGATIVE_CH", 199)  # type: ignore Single-ended
+                ljm.eWriteName(handle, "STREAM_RESOLUTION_INDEX", 0) # type: ignore
+                ljm.eWriteName(handle, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
+                self.stream = ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], self.scanRate) # type: ignore Configure and start stream
+                return 0
             return 0
         except ljm.LJMError:
             e = sys.exc_info()
@@ -111,8 +147,9 @@ class labjack:
         """
         try:
             self.scanRate = scanRate
-            self.stop_stream()
-            self.start_stream()
+            if not self.args.debug:
+                self.stop_stream()
+                self.start_stream()
             return 0
         except ljm.LJMError:
             e = sys.exc_info()
@@ -122,3 +159,33 @@ class labjack:
             e = sys.exc_info()
             print(e)
             return -1
+    
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="LabJack Interface script")
+    parser.add_argument("-d", "--debug", help="Enable simulated labjack data", action="store_true")
+    args = parser.parse_args()
+
+    ch_list = list(config.channelToSensor.keys())
+
+    labjack = labjackClass(ch_list, config.scanRate, args)
+    
+    scanData = labjack.read_data()
+    print(scanData)
+
+    scansSinceNetPacket = 0
+
+    if type(scanData) == tuple[list[float], int, int]:
+        data, scansPendingLJM, scansPendingLJ = scanData # type: ignore
+        scansSinceNetPacket += 1
+        timestamp = time.time_ns()
+        dataConverted: list[int] = []
+        for i in range(len(ch_list)):
+            sensor = config.channelToSensor[ch_list[i]]
+            convertedValue = sensor.convertClass.volt_to_output(data[i]) # type: ignore
+            dataConverted.append(convertedValue)
+        if scansSinceNetPacket > config.networkScanFraction:
+            sender.send_packet(dataConverted, timestamp * 1000 * 1000) # type: ignore
+            scansSinceNetPacket = 0
+        dataLogger.writeRow(data, dataConverted, timestamp * 1000 * 1000) # type: ignore
+
+
