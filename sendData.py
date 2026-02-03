@@ -7,7 +7,7 @@ from numpy import int32
 class sendData:
     def __init__(self, ip: str, port: int, channels: list[str], config: dict[str, config.Sensor]):
         self.socket_udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket_udp.bind(("192.168.0.213", 50003))  # Bind to any available port
+        # self.socket_udp.bind(("192.168.0.213", 50003))  # Bind to any available port
         self.mc_addr = ip
         self.port = port
         self.config = config
@@ -21,16 +21,16 @@ class sendData:
                 byte_data = header.to_bytes(1, 'little', signed=False)
                 byte_data += sensor.sensor_type_id.value.to_bytes(1, 'little', signed=False)
                 byte_data += int(timestamp).to_bytes(4, 'little', signed=False)
-                # clamp the sensor value to the 2-byte range (signed or unsigned) to avoid overflow
+                # clamp the sensor value to the 4-byte range (signed or unsigned) to avoid overflow
                 raw_value = int(dataConverted[i])
                 if sensor.sensor_type_id == SensorTypeID.THRUST:
                     signed_flag = False
-                    min_v, max_v = 0, 0xFFFF
+                    min_v, max_v = 0, 0xFFFFFFFF
                 else:
                     signed_flag = True
-                    min_v, max_v = -(2**15), 2**15 - 1
+                    min_v, max_v = -(4**15), 4**15 - 1
                 clamped = max(min_v, min(max_v, raw_value))
-                byte_data += int(clamped).to_bytes(2, 'little', signed=signed_flag)
+                byte_data += int(clamped).to_bytes(4, 'little', signed=signed_flag)
                 byte_data += sensor.sensor_id.to_bytes(1, 'little', signed=False)
                 self.socket_udp.sendto(byte_data, (self.mc_addr, self.port))
             except Exception:
