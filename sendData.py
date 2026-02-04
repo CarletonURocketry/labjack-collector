@@ -3,6 +3,7 @@ from packet_spec import PacketType, TelemetryPacketSubType as SensorTypeID
 import config
 import sys
 from numpy import int32
+from labjack import ljm # type: ignore
 
 class sendData:
     def __init__(self, ip: str, port: int, channels: list[str], config: dict[str, config.Sensor]):
@@ -36,4 +37,5 @@ class sendData:
             except Exception:
                 print(f"Error sending data for channel {self.channels[i]}")
                 print(f"Data: {dataConverted[i]}")
+                ljm.closeAll()
                 print(sys.exc_info())

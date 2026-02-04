@@ -9,6 +9,7 @@ import config
 import sendData
 import dataLogger
 import logging
+from labjack import ljm # type: ignore
 
 parser = argparse.ArgumentParser(description="LabJack Data Collector")
 parser.add_argument("-d", "--debug", help="Enable simulated labjack data", action="store_true")
@@ -68,5 +69,6 @@ try:
             #dataLogger.writeRow(data, dataConverted, timestamp) # type: ignore
 except Exception:
     e = sys.exc_info()
+    ljm.closeAll()
     print(f"Unhandled exception in main loop: {e}")
     errorLog.critical(f"Unhandled exception in main loop: {e}")

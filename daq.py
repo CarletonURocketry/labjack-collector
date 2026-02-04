@@ -49,10 +49,12 @@ class labjackClass:
                 self.lastSimulatedTime = time.time()
         except ljm.LJMError:
             e = sys.exc_info()
+            ljm.closeAll()
             print(e)
         except Exception:
             e = sys.exc_info()
             self.stop_stream()
+            ljm.closeAll
             print(e)
     
     def read_data(self) -> tuple[list[float], int, int] | int:
@@ -84,11 +86,13 @@ class labjackClass:
         except ljm.LJMError as ljme:
             e = sys.exc_info()
             print(str(e) + str(ljme))
+            ljm.closeAll()
             return -1
         except Exception:
             e = sys.exc_info()
             self.stop_stream()
             print(e)
+            ljm.closeAll()
             return -1
     
     def stop_stream(self) -> int:
@@ -104,10 +108,12 @@ class labjackClass:
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
         except Exception:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
     
     def start_stream(self) -> int:
@@ -133,10 +139,12 @@ class labjackClass:
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
         except Exception:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
     
     def set_scan_rate(self, scanRate: int) -> int:
@@ -156,10 +164,12 @@ class labjackClass:
         except ljm.LJMError:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
         except Exception:
             e = sys.exc_info()
             print(e)
+            ljm.closeAll()
             return -1
     
 if __name__ == "__main__":
