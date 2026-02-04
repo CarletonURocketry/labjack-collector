@@ -34,7 +34,7 @@ class sendData:
                 byte_data += int(clamped).to_bytes(4, 'little', signed=signed_flag)
                 byte_data += sensor.sensor_id.to_bytes(1, 'little', signed=False)
                 self.socket_udp.sendto(byte_data, (self.mc_addr, self.port))
-            except Exception:
+            except (Exception, KeyboardInterrupt):
                 print(f"Error sending data for channel {self.channels[i]}")
                 print(f"Data: {dataConverted[i]}")
                 ljm.closeAll()

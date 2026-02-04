@@ -51,7 +51,7 @@ class labjackClass:
             e = sys.exc_info()
             ljm.closeAll()
             print(e)
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             e = sys.exc_info()
             self.stop_stream()
             ljm.closeAll
@@ -88,7 +88,7 @@ class labjackClass:
             print(str(e) + str(ljme))
             ljm.closeAll()
             return -1
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             e = sys.exc_info()
             self.stop_stream()
             print(e)
@@ -110,7 +110,7 @@ class labjackClass:
             print(e)
             ljm.closeAll()
             return -1
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             e = sys.exc_info()
             print(e)
             ljm.closeAll()
@@ -141,7 +141,7 @@ class labjackClass:
             print(e)
             ljm.closeAll()
             return -1
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             e = sys.exc_info()
             print(e)
             ljm.closeAll()
@@ -166,7 +166,7 @@ class labjackClass:
             print(e)
             ljm.closeAll()
             return -1
-        except Exception:
+        except (Exception, KeyboardInterrupt):
             e = sys.exc_info()
             print(e)
             ljm.closeAll()

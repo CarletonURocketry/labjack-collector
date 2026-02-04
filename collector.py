@@ -67,7 +67,7 @@ try:
                 scansSinceNetPacket = 0
                 #print("Sent network packet")
             #dataLogger.writeRow(data, dataConverted, timestamp) # type: ignore
-except Exception:
+except (Exception, KeyboardInterrupt):
     e = sys.exc_info()
     ljm.closeAll()
     print(f"Unhandled exception in main loop: {e}")
