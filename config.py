@@ -29,7 +29,7 @@ channelToSensor: dict[str, Sensor] = {
 
 scanRate = 8000 # Scan rate in Hz
 
-networkScanFraction = 100 # Fraction of scans to send over network (e.g., 10 means 1 out of every 10 scans)
+networkScanFraction = 1000 # Fraction of scans to send over network (e.g., 10 means 1 out of every 10 scans)
 
 logFilePath = ""#"\\logs\\labjack-collector"
 

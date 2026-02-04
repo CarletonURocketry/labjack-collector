@@ -47,6 +47,7 @@ class labjackClass:
                 self.labjack = None
                 self.stream = None
                 self.lastSimulatedTime = time.time()
+                self.ljmBuffer = 0
         except ljm.LJMError:
             e = sys.exc_info()
             ljm.closeAll()
@@ -67,22 +68,27 @@ class labjackClass:
             if not self.args.debug:
                 #print("Reading data from labjack...")
                 data = ljm.eStreamRead(self.labjack)  # type: ignore Read data from stream
-                print(f"Labjack Buffer {data[1]}, LJM Buffer {data[2]}")  # type: ignore
+                #print(f"Labjack Buffer {data[1]}, LJM Buffer {data[2]}")  # type: ignore
                 return data # type: ignore
             else:
-                print("Simulating data...")
-                while ((time.time() - self.lastSimulatedTime) < 1.0 / self.scanRate):
+                #print("Simulating data...")
+                if ((time.time() - self.lastSimulatedTime) > 1.0 / self.scanRate): # If time greater than scan interval has passed, increment LJM buffer
+                    self.ljmBuffer += 1
+                elif self.ljmBuffer > 0:
+                    self.ljmBuffer -= 1
+                while ((time.time() - self.lastSimulatedTime) < 1.0 / self.scanRate) and not self.ljmBuffer > 0: # If time less than scan interval has passed and no scans in LJM buffer,
                     pass
-                self.lastSimulatedTime = time.time()
+                if (time.time() - self.lastSimulatedTime) > 1.0 / self.scanRate: # If time greater than scan interval has passed, set last scan to now
+                    self.lastSimulatedTime = time.time()
                 simulatedData: list[float] = []
                 for _ in self.scanList:
                     if config.channelToSensor[_].sensor_type_id in (config.SensorTypeID.TEMPERATURE, config.SensorTypeID.MASS, config.SensorTypeID.THRUST):
                         simulatedData.append(random.uniform(0, 10))
                     else:
                         simulatedData.append(random.uniform(0, 5))
-                scansPendingLJM = 0
                 scansPendingLJ = 0
-                return (simulatedData, scansPendingLJM, scansPendingLJ)
+                #print(f"Labjack Buffer {scansPendingLJ}, LJM Buffer {self.ljmBuffer}")  # type: ignore
+                return (simulatedData, scansPendingLJ, self.ljmBuffer)
         except ljm.LJMError as ljme:
             e = sys.exc_info()
             print(str(e) + str(ljme))

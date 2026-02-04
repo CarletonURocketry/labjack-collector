@@ -10,6 +10,8 @@ import sendData
 import dataLogger
 import logging
 from labjack import ljm # type: ignore
+from threading import Thread
+from queue import Queue
 
 parser = argparse.ArgumentParser(description="LabJack Data Collector")
 parser.add_argument("-d", "--debug", help="Enable simulated labjack data", action="store_true")
@@ -44,31 +46,65 @@ dataLogger = dataLogger.dataLogger(dataLogFileName, ch_list, config.channelToSen
 
 scansSinceNetPacket = 0
 
-try:
+dataList: list[str] = []
+
+writeQueue = Queue()
+netQueue = Queue()
+
+def labjackCollector():
+    global scansSinceNetPacket
+    try:
+        while True:
+            scanData = labjack.read_data()
+            #print(f"Data read: {scanData}")
+            if type(scanData) == int:
+                time.sleep(1)
+                print("Error reading data from labjack")
+                errorLog.error("Error reading data from labjack")
+            else:
+                data, scansPendingLJ, scansPendingLJM = scanData # type: ignore
+                scansSinceNetPacket += 1
+                timestamp = time.time() - startTime
+                #print(f"Timestamp: {timestamp}")
+                dataConverted: list[int] = []
+                for i in range(len(ch_list)):
+                    sensor = config.channelToSensor[ch_list[i]]
+                    convertedValue = sensor.convertClass.volt_to_output(data[i]) # type: ignore
+                    dataConverted.append(convertedValue)
+                dataString = f"Timestamp: {timestamp}, Data:{','.join(map(str, data))}, Converted: {','.join(map(str, dataConverted))}\n"
+                dataList.append(dataString)
+                if scansSinceNetPacket > config.networkScanFraction:
+                    #sender.send_packet(dataConverted, timestamp * 1000) # type: ignore
+                    netQueue.put((dataConverted, timestamp * 1000))
+                    scansSinceNetPacket = 0
+                    #print(f"LJM Buffer {scansPendingLJM}")
+                    #print("Sent network packet")
+                    writeQueue.put(dataList)
+    except (Exception, KeyboardInterrupt):
+        e = sys.exc_info()
+        ljm.closeAll()
+        print(f"Unhandled exception in main loop: {e}")
+        errorLog.critical(f"Unhandled exception in main loop: {e}")
+
+def dataWriter():
     while True:
-        scanData = labjack.read_data()
-        #print(f"Data read: {scanData}")
-        if type(scanData) == int:
-            time.sleep(1)
-            print("Error reading data from labjack")
-            errorLog.error("Error reading data from labjack")
-        else:
-            data, scansPendingLJM, scansPendingLJ = scanData # type: ignore
-            scansSinceNetPacket += 1
-            timestamp = time.time() - startTime
-            #print(f"Timestamp: {timestamp}")
-            dataConverted: list[int] = []
-            for i in range(len(ch_list)):
-                sensor = config.channelToSensor[ch_list[i]]
-                convertedValue = sensor.convertClass.volt_to_output(data[i]) # type: ignore
-                dataConverted.append(convertedValue)
-            if scansSinceNetPacket > config.networkScanFraction:
-                sender.send_packet(dataConverted, timestamp * 1000) # type: ignore
-                scansSinceNetPacket = 0
-                #print("Sent network packet")
-            #dataLogger.writeRow(data, dataConverted, timestamp) # type: ignore
-except (Exception, KeyboardInterrupt):
-    e = sys.exc_info()
-    ljm.closeAll()
-    print(f"Unhandled exception in main loop: {e}")
-    errorLog.critical(f"Unhandled exception in main loop: {e}")
+        data = writeQueue.get(block=True)
+        print(f"writeQueue size: {writeQueue.qsize()}")
+        dataLogger.writeRow(dataList)
+
+def sendPacket():
+    while True:
+        data = netQueue.get(block=True)
+        #print(f"netQueue size: {netQueue.qsize()}")
+        sender.send_packet(data[0], data[1])
+
+if __name__ == "__main__":
+    collectorProcess = Thread(target=labjackCollector, name="LabJackCollectorProcess")
+    dataProcess = Thread(target=dataWriter, name="DataWriterProcess")
+    netProcess = Thread(target=sendPacket, name="SendPacketProcess")
+    netProcess.start()
+    collectorProcess.start()
+    dataProcess.start()
+    collectorProcess.join()
+    dataProcess.join()
+    netProcess.join()

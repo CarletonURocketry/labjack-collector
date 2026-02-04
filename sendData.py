@@ -2,7 +2,6 @@ import socket
 from packet_spec import PacketType, TelemetryPacketSubType as SensorTypeID
 import config
 import sys
-from numpy import int32
 from labjack import ljm # type: ignore
 
 class sendData:
@@ -14,7 +13,7 @@ class sendData:
         self.config = config
         self.channels = channels
 
-    def send_packet(self, dataConverted: list[int32], timestamp: float) -> None:
+    def send_packet(self, dataConverted: list[int], timestamp: float) -> None:
         header = PacketType.TELEMETRY.value
         for i in range(len(self.channels)):
             try:

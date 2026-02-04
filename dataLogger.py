@@ -3,6 +3,7 @@ Contains the class to manage logging data to a CSV file.
 """
 import config
 import os
+from io import BufferedWriter, FileIO
 
 class dataLogger:
     """
@@ -23,12 +24,15 @@ class dataLogger:
             header = "Timestamp,"
             for channel in self.channels:
                 sensor = self.config[channel]
-                header += f"{sensor.name}_Raw,{sensor.name}_Converted,"
+                header += f"{sensor.name}_Raw,"
+            for channel in self.channels:
+                sensor = self.config[channel]
+                header += f"{sensor.name}_Converted,"
             header = header + "\n"
             f.write(header)
             f.flush() # Clear Python's buffer
             os.fsync(f.fileno()) # Ensure data is written to disk
-        with open(self.filepath + ".back", "a", newline="") as f:
+        '''with open(self.filepath + ".back", "a", newline="") as f:
             header = "Timestamp,"
             for channel in self.channels:
                 sensor = self.config[channel]
@@ -36,9 +40,9 @@ class dataLogger:
             header = header + "\n"
             f.write(header)
             f.flush() # Clear Python's buffer
-            os.fsync(f.fileno()) # Ensure data is written to disk
+            os.fsync(f.fileno())''' # Ensure data is written to disk
 
-    def writeRow(self, dataRaw: list[float], dataConverted: list[int], timestamp: float) -> None:
+    def writeRow(self, dataList: list[str]) -> None:
         """Function to write a row of data to the CSV. NOTE: Data must be in the same order as channels passed to the constructor.
 
         Args:
@@ -47,18 +51,19 @@ class dataLogger:
             timestamp (float): Timestamp of the data
         """
         with open(self.filepath, "a", newline="") as f:
+            #row = f"{timestamp},"
+            #for i in range(len(self.channels)):
+            #    row += f"{round(dataRaw[i], 3)},{dataConverted[i]},"
+            #row = row + "\n"
+            #f.write(row)
+            f.writelines(dataList)
+            #f.flush() # Clear Python's buffer
+            #os.fsync(f.fileno()) # Ensure data is written to disk
+        '''with open(self.filepath + ".back", "a", newline="") as f:
             row = f"{timestamp},"
             for i in range(len(self.channels)):
                 row += f"{dataRaw[i]},{dataConverted[i]},"
             row = row + "\n"
             f.write(row)
             f.flush() # Clear Python's buffer
-            os.fsync(f.fileno()) # Ensure data is written to disk
-        with open(self.filepath + ".back", "a", newline="") as f:
-            row = f"{timestamp},"
-            for i in range(len(self.channels)):
-                row += f"{dataRaw[i]},{dataConverted[i]},"
-            row = row + "\n"
-            f.write(row)
-            f.flush() # Clear Python's buffer
-            os.fsync(f.fileno()) # Ensure data is written to disk
+            os.fsync(f.fileno())''' # Ensure data is written to disk
