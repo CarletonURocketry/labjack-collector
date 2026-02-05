@@ -87,6 +87,8 @@ def labjackCollector():
                     try:
                         netQueue.put(netDict, block = False)
                         scansSinceNetPacket = 0
+                        print(f"P3 value sent: {netDict['P3'][-1]}")
+                        print(f"AIN13 raw value sent: {dataDict['AIN13']}")
                         netDict = {"Timestamp": []}
                         for ch in ch_list:
                             sensor_name = config.channelToSensor[ch].name
