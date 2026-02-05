@@ -42,6 +42,8 @@ class labjackClass:
                 ljm.eWriteName(self.labjack, "STREAM_SETTLING_US", 0) # type: ignore Auto settling time
                 ljm.eStreamStart(self.labjack, 1, len(scanList), ljm.namesToAddresses(len(scanList), scanList)[0], scanRate) # type: ignore Configure and start stream
                 print("Stream started.")
+                print(ljm.eReadName(self.labjack, "_RANGE"))  # type: ignore Get and print the actual scan rate
+                print(ljm.eReadName(self.labjack, "_NEGATIVE_CH"))  # type: ignore
             else:
                 print("Debug mode enabled, simulating labjack data...")
                 self.labjack = None
