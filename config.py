@@ -16,7 +16,7 @@ channelToSensor: dict[str, Sensor] = {
     "AIN3": Sensor("MASS", SensorTypeID.MASS, 0, dataConversions.genericAmplifier((0, 100*1000), (0, 5))), # (g, V)
     "AIN2": Sensor("P1", SensorTypeID.PRESSURE, 1, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN4": Sensor("P2", SensorTypeID.PRESSURE, 2, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
-    "AIN13": Sensor("P3", SensorTypeID.PRESSURE, 3, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
+    "AIN13": Sensor("P3", SensorTypeID.PRESSURE, 3, dataConversions.genericAmplifier((0, 1000*1000), (1, 5))), # (mPSI, V)
     "AIN6": Sensor("P4", SensorTypeID.PRESSURE, 4, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN7": Sensor("P5", SensorTypeID.PRESSURE, 5, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN8": Sensor("P6", SensorTypeID.PRESSURE, 6, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
