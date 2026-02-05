@@ -1,0 +1,122 @@
+{
+  "type": "record",
+  "name": "Record",
+  "fields": [
+    {
+      "name": "Timestamp",
+      "type": {"type": "long", "logicalType": "timestamp-micros"}
+    },
+    {
+      "name": "AIN0",
+      "type": "float"
+    },
+    {
+      "name": "AIN1",
+      "type": "float"
+    },
+    {
+      "name": "AIN2",
+      "type": "float"
+    },
+    {
+      "name": "AIN3",
+      "type": "float"
+    },
+    {
+      "name": "AIN4",
+      "type": "float"
+    },
+    {
+      "name": "AIN5",
+      "type": "float"
+    },
+    {
+      "name": "AIN6",
+      "type": "float"
+    },
+    {
+      "name": "AIN7",
+      "type": "float"
+    },
+    {
+        "name": "AIN8",
+        "type": "float"
+    },
+    {
+        "name": "AIN9",
+        "type": "float"
+    },
+    {
+        "name": "AIN10",
+        "type": "float"
+    },
+    {
+        "name": "AIN11",
+        "type": "float"
+    },
+    {
+        "name": "AIN12",
+        "type": "float"
+    },
+    {
+        "name": "AIN13",
+        "type": "float"
+    },
+    {
+        "name": "P1",
+        "type": "int"
+    },
+    {
+        "name": "P2",
+        "type": "int"
+    },
+    {
+        "name": "P3",
+        "type": "int"
+    },
+    {
+        "name": "P4",
+        "type": "int"
+    },
+    {
+        "name": "P5",
+        "type": "int"
+    },
+    {
+        "name": "P6",
+        "type": "int"
+    },
+    {
+        "name": "P7",
+        "type": "int"
+    },
+    {
+        "name": "T1",
+        "type": "int"
+    },
+    {
+        "name": "T2",
+        "type": "int"
+    },
+    {
+        "name": "T3",
+        "type": "int"
+    },
+    {
+        "name": "T4",
+        "type": "int"
+    },
+    {
+        "name": "T5",
+        "type": "int"
+    },
+    {
+        "name": "MASS",
+        "type": "int"
+    },
+    {
+        "name": "THRUST",
+        "type": "int"
+    }
+  ]
+}
