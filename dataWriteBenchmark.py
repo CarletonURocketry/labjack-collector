@@ -113,7 +113,7 @@ if __name__ == "__main__":
             for batch in itertools.batched(dataList, i):
                 writer.write(batch) # type: ignore
             end = datetime.datetime.now()
-            print(f"{method.__name__} took {end - start} to write {len(dataList)} rows in batches of {i}") 
+            print(f"{method.__name__} took {end - start} to write {len(dataList)} rows in batches of {i}")  # type: ignore
 
 # Results (from one run):
 #   csvOpenEveryTime init took 0:00:00.000999 seconds to start

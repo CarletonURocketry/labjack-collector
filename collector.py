@@ -2,6 +2,7 @@
 """
 import argparse
 
+import datetime
 import sys
 import time
 import daq
@@ -11,7 +12,7 @@ import dataLogger
 import logging
 from labjack import ljm # type: ignore
 from threading import Thread
-from queue import Queue
+from queue import Queue, Full
 
 parser = argparse.ArgumentParser(description="LabJack Data Collector")
 parser.add_argument("-d", "--debug", help="Enable simulated labjack data", action="store_true")
@@ -42,18 +43,25 @@ labjack = daq.labjackClass(ch_list, scanRate, args)
 
 sender = sendData.sendData(args.mc_addr, args.port, ch_list, config.channelToSensor)
 
-dataLogger = dataLogger.dataLogger(dataLogFileName, ch_list, config.channelToSensor)
+dataLogFile = dataLogger.dataLogger(dataLogFileName, ch_list, config.channelToSensor)
 
 scansSinceNetPacket = 0
 
 dataList = []
 
-writeQueue = Queue()
-netQueue = Queue()
+writeQueue: Queue[list[dict[str, datetime.datetime | int | float]]] = Queue()
+netQueue: Queue[dict[str, list[int]]] = Queue()
 
 def labjackCollector():
     global scansSinceNetPacket
     try:
+        dataList: list[dict[str, datetime.datetime | int | float]] = []
+        netDict: dict[str, list[int]] = {"Timestamp": []}
+        for ch in ch_list:
+            sensor_name = config.channelToSensor[ch].name
+            netDict[sensor_name] = []
+            netDict[ch] = []
+        i = 0
         while True:
             scanData = labjack.read_data()
             #print(f"Data read: {scanData}")
@@ -63,23 +71,36 @@ def labjackCollector():
                 errorLog.error("Error reading data from labjack")
             else:
                 data, scansPendingLJ, scansPendingLJM = scanData # type: ignore
+                dataDict: dict[str, datetime.datetime | int | float] = {}
                 scansSinceNetPacket += 1
                 timestamp = time.time() - startTime
-                #print(f"Timestamp: {timestamp}")
-                dataConverted: list[int] = []
+                netDict["Timestamp"].append(int(timestamp * 1000))
+                dataDict["Timestamp"] = datetime.datetime.now(datetime.timezone.utc)
                 for i in range(len(ch_list)):
                     sensor = config.channelToSensor[ch_list[i]]
                     convertedValue = sensor.convertClass.volt_to_output(data[i]) # type: ignore
-                    dataConverted.append(convertedValue)
-                dataString = f"Timestamp: {timestamp}, Data:{','.join(map(str, data))}, Converted: {','.join(map(str, dataConverted))}\n"
-                dataList.append(dataString)
+                    dataDict[f"{ch_list[i]}"] = data[i]
+                    dataDict[f"{sensor.name}"] = convertedValue
+                    netDict[f"{sensor.name}"].append(convertedValue)
+                dataList.append(dataDict)
                 if scansSinceNetPacket > config.networkScanFraction:
-                    #sender.send_packet(dataConverted, timestamp * 1000) # type: ignore
-                    netQueue.put((dataConverted, timestamp * 1000))
-                    scansSinceNetPacket = 0
+                    try:
+                        netQueue.put(netDict, block = False)
+                        scansSinceNetPacket = 0
+                        netDict = {"Timestamp": []}
+                        for ch in ch_list:
+                            sensor_name = config.channelToSensor[ch].name
+                            netDict[sensor_name] = []
+                    except Full:
+                        pass
                     print(f"LJM Buffer {scansPendingLJM}")
                     #print("Sent network packet")
-                writeQueue.put((data, dataConverted, timestamp * 1000))
+                if len(dataList) >= 800:
+                    try:
+                        writeQueue.put(dataList, block=False)
+                        dataList = []
+                    except Full:
+                        pass
     except (Exception, KeyboardInterrupt):
         e = sys.exc_info()
         ljm.closeAll()
@@ -90,13 +111,13 @@ def dataWriter():
     while True:
         data = writeQueue.get(block=True)
         print(f"writeQueue size: {writeQueue.qsize()}")
-        dataLogger.writeRow(data[0], data[1], data[2])
+        dataLogFile.writeRows(data)
 
 def sendPacket():
     while True:
         data = netQueue.get(block=True)
         print(f"netQueue size: {netQueue.qsize()}")
-        sender.send_packet(data[0], data[1])
+        sender.send_packet(data)
 
 if __name__ == "__main__":
     collectorProcess = Thread(target=labjackCollector, name="LabJackCollectorProcess")
