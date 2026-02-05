@@ -46,7 +46,7 @@ dataLogger = dataLogger.dataLogger(dataLogFileName, ch_list, config.channelToSen
 
 scansSinceNetPacket = 0
 
-dataList: list[str] = []
+dataList = []
 
 writeQueue = Queue()
 netQueue = Queue()
@@ -77,9 +77,9 @@ def labjackCollector():
                     #sender.send_packet(dataConverted, timestamp * 1000) # type: ignore
                     netQueue.put((dataConverted, timestamp * 1000))
                     scansSinceNetPacket = 0
-                    #print(f"LJM Buffer {scansPendingLJM}")
+                    print(f"LJM Buffer {scansPendingLJM}")
                     #print("Sent network packet")
-                    writeQueue.put(dataList)
+                writeQueue.put((data, dataConverted, timestamp * 1000))
     except (Exception, KeyboardInterrupt):
         e = sys.exc_info()
         ljm.closeAll()
@@ -90,12 +90,12 @@ def dataWriter():
     while True:
         data = writeQueue.get(block=True)
         print(f"writeQueue size: {writeQueue.qsize()}")
-        dataLogger.writeRow(dataList)
+        dataLogger.writeRow(data[0], data[1], data[2])
 
 def sendPacket():
     while True:
         data = netQueue.get(block=True)
-        #print(f"netQueue size: {netQueue.qsize()}")
+        print(f"netQueue size: {netQueue.qsize()}")
         sender.send_packet(data[0], data[1])
 
 if __name__ == "__main__":
