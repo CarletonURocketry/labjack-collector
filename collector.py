@@ -112,13 +112,13 @@ def labjackCollector():
 def dataWriter():
     while True:
         data = writeQueue.get(block=True)
-        print(f"writeQueue size: {writeQueue.qsize()}")
+        #print(f"writeQueue size: {writeQueue.qsize()}")
         dataLogFile.writeRows(data)
 
 def sendPacket():
     while True:
         data = netQueue.get(block=True)
-        print(f"netQueue size: {netQueue.qsize()}")
+        #print(f"netQueue size: {netQueue.qsize()}")
         sender.send_packet(data)
 
 if __name__ == "__main__":
