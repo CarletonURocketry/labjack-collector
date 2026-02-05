@@ -16,7 +16,7 @@ channelToSensor: dict[str, Sensor] = {
     "AIN3": Sensor("MASS", SensorTypeID.MASS, 0, dataConversions.genericAmplifier((0, 100*1000), (0, 5))), # (g, V)
     "AIN2": Sensor("P1", SensorTypeID.PRESSURE, 1, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN4": Sensor("P2", SensorTypeID.PRESSURE, 2, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
-    "AIN5": Sensor("P3", SensorTypeID.PRESSURE, 3, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
+    "AIN13": Sensor("P3", SensorTypeID.PRESSURE, 3, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN6": Sensor("P4", SensorTypeID.PRESSURE, 4, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN7": Sensor("P5", SensorTypeID.PRESSURE, 5, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
     "AIN8": Sensor("P6", SensorTypeID.PRESSURE, 6, dataConversions.genericAmplifier((0, 1000*1000), (0, 5))), # (mPSI, V)
@@ -24,7 +24,7 @@ channelToSensor: dict[str, Sensor] = {
     "AIN10": Sensor("T1", SensorTypeID.TEMPERATURE, 0, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))), # (mC, V)
     "AIN11": Sensor("T2", SensorTypeID.TEMPERATURE, 1, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))), # (mC, V)
     "AIN12": Sensor("T3", SensorTypeID.TEMPERATURE, 3, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))), # Placeholder (mC, V)
-    "AIN13": Sensor("T4", SensorTypeID.TEMPERATURE, 4, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))) # Placeholder (mC, V)
+    "AIN5": Sensor("T4", SensorTypeID.TEMPERATURE, 4, dataConversions.genericAmplifier((0, 1300*1000), (0, 10))) # Placeholder (mC, V)
     }
 
 scanRate = 8000 # Scan rate in Hz
