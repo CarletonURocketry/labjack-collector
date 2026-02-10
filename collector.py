@@ -3,6 +3,7 @@
 import argparse
 
 import datetime
+import os
 import sys
 import time
 import daq
@@ -16,6 +17,7 @@ from queue import Queue, Full
 
 parser = argparse.ArgumentParser(description="LabJack Data Collector")
 parser.add_argument("-d", "--debug", help="Enable simulated labjack data", action="store_true")
+parser.add_argument("--dataDir", help="Directory to save data files to (supports '{date}')", type=str, default=config.dataSaveDir)
 parser.add_argument("--dataFile", help="Path to save data file to", type=str, default=config.dataLog)
 parser.add_argument("--logFilePath", help="Path to save log files to", type=str, default=config.logFilePath)
 parser.add_argument("--scanRate", help="Scan rate in Hz", type=int, default=config.scanRate)
@@ -29,7 +31,9 @@ errorLog = logging.getLogger(__name__)
 logging.basicConfig(filename=config.logFilePath + "\\" + "error.log", encoding='utf-8', level=logging.INFO)
 
 log = True
-dataLogFileName = args.dataFile
+data_dir = args.dataDir.replace("{date}", datetime.date.today().isoformat())
+os.makedirs(data_dir, exist_ok=True)
+dataLogFileName = args.dataFile if os.path.isabs(args.dataFile) else os.path.join(data_dir, args.dataFile)
 scanRate = args.scanRate
 
 errorLog.info("Starting labjack-collector")

@@ -35,5 +35,7 @@ logFilePath = ""#"\\logs\\labjack-collector"
 
 dataLog = "data.csv"
 
+dataSaveDir = "/mnt/labjack/{date}"
+
 mc_addr = "239.100.110.210"
 port = 50002
