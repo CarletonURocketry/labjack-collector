@@ -66,14 +66,20 @@ def labjackCollector():
             netDict[sensor_name] = []
             netDict[ch] = []
         i = 0
+        consecutive_errors = 0
         while True:
             scanData = labjack.read_data()
-            #print(f"Data read: {scanData}")
             if type(scanData) == int:
-                time.sleep(1)
+                consecutive_errors += 1
                 print("Error reading data from labjack")
                 errorLog.error("Error reading data from labjack")
+                if consecutive_errors >= 10:
+                    print("Too many consecutive errors, exiting for restart")
+                    errorLog.critical("Too many consecutive errors, exiting")
+                    os._exit(1)
+                time.sleep(1)
             else:
+                consecutive_errors = 0
                 data, scansPendingLJ, scansPendingLJM = scanData # type: ignore
                 dataDict: dict[str, datetime.datetime | int | float] = {}
                 scansSinceNetPacket += 1

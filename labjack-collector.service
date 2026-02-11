@@ -1,0 +1,19 @@
+[Unit]
+Description=LabJack Data Collector Service
+After=network.target local-fs.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=avionic
+WorkingDirectory=/home/avionic/labjack-collector
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/home/avionic/labjack-collector/.venv/bin/python /home/avionic/labjack-collector/collector.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

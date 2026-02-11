@@ -32,6 +32,11 @@ class labjackClass:
             if not self.args.debug:
                 print("Connecting to labjack...")
                 self.labjack = ljm.openS("T7", "USB", "ANY")  # T7, USB connection, Any identifier
+                try:
+                    ljm.eStreamStop(self.labjack)  # type: ignore
+                    print("Stopped previous stream")
+                except ljm.LJMError:
+                    pass
                 ljm.eWriteName(self.labjack, "STREAM_TRIGGER_INDEX", 0) # type: ignore Ensure triggered stream is disabled.
                 ljm.eWriteName(self.labjack, "STREAM_CLOCK_SOURCE", 0)  # type: ignore Enabling internally-clocked stream.
                 print(f"Connected to labjack with handle: {self.labjack}")

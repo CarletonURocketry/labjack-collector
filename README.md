@@ -19,5 +19,39 @@ python3 -m venv .venv
 ```
 
 ```shell
-python install -r requirements.txt
+pip install -r requirements.txt
+```
+
+## Systemd Service
+
+To run the collector as a persistent service that starts on boot:
+
+```shell
+# Copy service file to systemd
+sudo cp labjack-collector.service /etc/systemd/system/
+
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable on boot
+sudo systemctl enable labjack-collector.service
+
+# Start the service
+sudo systemctl start labjack-collector.service
+```
+
+### Managing the Service
+
+```shell
+# Check status
+sudo systemctl status labjack-collector.service
+
+# Restart the service
+sudo systemctl restart labjack-collector.service
+
+# Stop the service
+sudo systemctl stop labjack-collector.service
+
+# View logs
+journalctl -u labjack-collector.service -f
 ```
