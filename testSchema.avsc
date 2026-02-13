@@ -1,0 +1,122 @@
+{
+  "type": "record",
+  "name": "Record",
+  "fields": [
+    {
+      "name": "Timestamp",
+      "type": {"type": "long", "logicalType": "timestamp-micros"}
+    },
+    {
+      "name": "AIN0_Raw",
+      "type": "float"
+    },
+    {
+      "name": "AIN0_Converted",
+      "type": "int"
+    },
+    {
+      "name": "AIN1_Raw",
+      "type": "float"
+    },
+    {
+      "name": "AIN1_Converted",
+      "type": "int"
+    },
+    {
+      "name": "AIN2_Raw",
+      "type": "float"
+    },
+    {
+      "name": "AIN2_Converted",
+      "type": "int"
+    },
+    {
+      "name": "AIN3_Raw",
+      "type": "float"
+    },
+    {
+      "name": "AIN3_Converted",
+      "type": "int"
+    },
+    {
+        "name": "AIN4_Raw",
+        "type": "float"
+        },
+        {
+        "name": "AIN4_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN5_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN5_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN6_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN6_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN7_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN7_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN8_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN8_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN9_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN9_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN10_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN10_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN11_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN11_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN12_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN12_Converted",
+        "type": "int"
+    },
+    {
+        "name": "AIN13_Raw",
+        "type": "float"
+    },
+    {
+        "name": "AIN13_Converted",
+        "type": "int"
+    }
+  ]
+}
